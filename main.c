@@ -7,12 +7,23 @@
 //
 
 #include <stdio.h>
+#include "labyrinth.h"
 
 int main(int argc, const char * argv[])
 {
-
-    // insert code here...
-    printf("Hello, World!\n");
+    Graph *g = NULL;
+    
+    g = InitLab(3);
+    if (!g)
+    {
+        printf("\nMemory error\n");
+        return 1;
+    }
+    
+    SetOutStream(stdout);
+    
+    PrintLab(g);
+    
     return 0;
 }
 
