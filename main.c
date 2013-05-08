@@ -16,7 +16,7 @@
 
 int main(int argc, const char * argv[])
 {
-    Graph *g = NULL;
+    Graph *g = NULL, *spt = NULL;
     FILE *out = NULL;
     int _n = 0;
     
@@ -31,9 +31,10 @@ int main(int argc, const char * argv[])
         printf("\nMemory error\n");
         return 1;
     }
-    
-    Acyclic(g);
     PrintLab(g);
+    
+    spt = Kruskal(g);
+    PrintLab(spt);
     
     //fclose(out);
     return 0;

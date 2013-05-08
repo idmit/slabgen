@@ -24,6 +24,7 @@ typedef struct Graph
 
 Graph *InitLab(int _n);
 int Acyclic(Graph *graph);
+Graph *Kruskal(Graph *g);
 void SetOutStream(FILE *stream);
 void PrintLab(Graph *graph);
 

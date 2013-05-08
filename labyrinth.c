@@ -76,6 +76,12 @@ void PrintLab(Graph *graph)
 {
     int n = 0, _n = 0, i = 0, j = 0, vertical = 0;
     
+    if (!graph)
+    {
+        fprintf(outStream, "Empty graph");
+        return;
+    }
+    
     n = graph->n;
     _n = graph->_n;
     
@@ -162,7 +168,7 @@ int _dfs(Graph *graph, int *x, int v, int from)
     
     num = graph->_n * graph->_n;
     
-    printf("%d ", v);
+    //printf("%d ", v);
     x[v] = 1;
     
     GetU(graph, v, u, from);
@@ -204,7 +210,7 @@ int Dfs(Graph *graph, int v)
 
 int Acyclic(Graph *graph)
 {
-    int f = 0, i = 0, num = 0;
+    int i = 0, num = 0;
     
     num = graph->_n * graph->_n;
     
@@ -215,6 +221,34 @@ int Acyclic(Graph *graph)
         }
     
     return 1;
+}
+
+Graph *Kruskal(Graph *g)
+{
+    Graph *spt = NULL;
+    int k = 0, n = 0, i = 0;
+    
+    spt = malloc(sizeof(Graph));
+    if (!spt) { return NULL; }
+    
+    spt->_n = g->_n;
+    spt->n = g->n;
+    
+    spt->edges = malloc(spt->n * sizeof(Pair *));
+    if (!spt->edges) { free(spt); return NULL; }
+    
+    n = g->n;
+    
+    for (i = 0; i < n; i++)
+    {
+        while (!Acyclic((spt->edges[k] = g->edges[k], spt)))
+        {
+            spt->edges[k] = NULL;
+            k++;
+        }
+        k++;
+    }
+    return spt;
 }
 
 
