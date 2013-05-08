@@ -23,6 +23,7 @@ typedef struct Graph
 } Graph;
 
 Graph *InitLab(int _n);
+int Acyclic(Graph *graph);
 void SetOutStream(FILE *stream);
 void PrintLab(Graph *graph);
 

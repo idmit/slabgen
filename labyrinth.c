@@ -81,48 +81,141 @@ void PrintLab(Graph *graph)
     
     vertical =  _n * (_n - 1);
     
+    fprintf(outStream, "\n");
     for (i = 0; i < _n; i++)
     {
-        printf(" _");
+        fprintf(outStream, " _");
     }
-    printf(" ");
-    printf("\n");
+    fprintf(outStream, " ");
+    fprintf(outStream, "\n");
     
     i = j = 0;
     while (j < vertical)
     {
         if (i % _n == 0)
         {
-            printf("|");
+            fprintf(outStream, "|");
         }
         if (i < _n * _n - _n)
         {
-            printf(graph->edges[vertical + i] ? " " : "_");
+            fprintf(outStream, graph->edges[vertical + i] ? " " : "_");
         }
         else
-            printf("_");
+            fprintf(outStream, "_");
         
         if (i % _n != _n - 1)
         {
-            printf(graph->edges[j] ? " " : "|");
+            fprintf(outStream, graph->edges[j] ? " " : "|");
         }
         if (i % _n == _n - 1)
         {
-            printf("|\n");
+            fprintf(outStream, "|\n");
             j--;
         }
         i++;
         j++;
     }
-    printf("_|\n\n");
+    fprintf(outStream, "_|\n\n");
 }
 
-Graph *Kruskal()
+void GetU(Graph *graph, int v, int *u, int from)
 {
+    int i = 0, _n = 0, curr = 0, vertical = 0;
     
+    _n = graph->_n;
+    vertical =  _n * (_n - 1);
+    for (i = 0; i < 4; u[i] = -1, i++);
+    
+    if (v - _n >= 0)
+        if (graph->edges[vertical + v - _n])
+            if (v - _n != from)
+                u[curr] = v - _n, curr++;
+    if (v % _n != 0)
+        if (graph->edges[v - (v / _n + 1)])
+            if (v - 1 != from)
+                u[curr] = v - 1, curr++;
+    if (v % _n != _n - 1)
+        if (graph->edges[v - (v / _n + 1) + 1])
+            if (v + 1 != from)
+                u[curr] = v + 1, curr++;
+    if (v + _n < _n * _n)
+        if (graph->edges[vertical + v])
+            if (v + _n != from)
+                u[curr] = v + _n, curr++;
 }
 
+int Len(int *u)
+{
+    int i = 0;;
+    
+    for (i = 0; i < 4; i++)
+    {
+        if (u[i] == -1)
+            return i;
+    }
+    return 4;
+}
 
+int _dfs(Graph *graph, int *x, int v, int from)
+{
+    int i = 0, num = 0, u[4] = {0}, lenU = 0, to = 0;
+    
+    num = graph->_n * graph->_n;
+    
+    printf("%d ", v);
+    x[v] = 1;
+    
+    GetU(graph, v, u, from);
+    lenU = Len(u);
+    for (i = 0; i < lenU; i++)
+    {
+        to = u[i];
+        if (x[to] == 0)
+        {
+            if (_dfs(graph, x, to, v))
+                return 1;
+        }
+        else if (x[to] == 1)
+        {
+            return 1;
+        }
+    }
+    
+    x[v] = 2;
+    return 0;
+}
+
+int Dfs(Graph *graph, int v)
+{
+    int num = 0, *x = NULL, i = 0;
+    
+    num = graph->_n * graph->_n;
+    
+    x = malloc(num * sizeof(int));
+    if (!x)
+    {
+        return -1;
+    }
+    
+    for (i = 0; i < num; x[i] = 0, i++);
+    
+    return _dfs(graph, x, v, v);
+}
+
+int Acyclic(Graph *graph)
+{
+    int f = 0, i = 0, num = 0;
+    
+    num = graph->_n * graph->_n;
+    
+    for (i = 0; i < num; i++)
+        if (Dfs(graph, i))
+        {
+            return 0;
+        }
+    
+    return 1;
+}
 
 
 
