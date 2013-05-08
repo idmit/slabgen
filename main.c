@@ -17,18 +17,25 @@
 int main(int argc, const char * argv[])
 {
     Graph *g = NULL;
+    FILE *out = NULL;
+    int _n = 0;
     
-    g = InitLab(3);
+    //out = fopen("out.txt", "w");
+    SetOutStream(stdout);
+    
+    scanf("%d", &_n);
+    
+    g = InitLab(_n);
     if (!g)
     {
         printf("\nMemory error\n");
         return 1;
     }
     
-    SetOutStream(stdout);
-    
+    Acyclic(g);
     PrintLab(g);
     
+    //fclose(out);
     return 0;
 }
 
