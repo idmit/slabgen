@@ -205,7 +205,7 @@ int SortToPrint(Graph *graph)
     addedPairs = N * (N - 1);
     
     sorted = malloc(edgesNum * sizeof(Edge));
-    if (!sorted) { return NULL; }
+    if (!sorted) { return 0; }
     
     for (i = 0; i < edgesNum; i++)
     {
@@ -236,6 +236,8 @@ int SortToPrint(Graph *graph)
     
     free(edges);
     graph->edges = sorted;
+    
+    return 1;
 }
 
 // recursive deep-first-search wihin <graph> in vertice <v> with previous vertice <from> and array of labels <labels>
@@ -270,17 +272,17 @@ static int _dfs(Graph *graph, int *labels, int v, int from)
 
 static int Dfs(Graph *graph, int v) // returns 1 if there is a cycle containing <v> in <graph>
 {
-    int num = 0, *x = NULL, i = 0, result = 0;
+    int verticeNum = 0, *labels = NULL, i = 0, result = 0;
     
-    num = graph->N * graph->N;
+    verticeNum = graph->N * graph->N;
     
-    x = malloc(num * sizeof(int));
-    if (!x) { return -1; }
+    labels = malloc(verticeNum * sizeof(int));
+    if (!labels) { return -1; }
     
-    for (i = 0; i < num; x[i] = 0, i++); // haven't been anywhere yet
+    for (i = 0; i < verticeNum; labels[i] = 0, i++); // haven't been anywhere yet
     
-    result = _dfs(graph, x, v, v);
-    free(x);
+    result = _dfs(graph, labels, v, v);
+    free(labels);
     
     return result;
 }
