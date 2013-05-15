@@ -18,23 +18,30 @@ int main(int argc, const char * argv[])
 {
     Graph *g = NULL, *spt = NULL;
     FILE *out = NULL;
-    int _n = 0;
+    int N = 0;
     
     //out = fopen("out.txt", "w");
     SetOutStream(stdout);
     
-    scanf("%d", &_n);
+    scanf("%d", &N);
     
-    g = InitLab(_n);
+    g = InitLab(N);
     if (!g)
     {
         printf("\nMemory error\n");
         return 1;
     }
+    
     PrintLab(g);
     
+    ShuffleEdges(g->edges, g->edgesNum);
+    
     spt = Kruskal(g);
+    
+    SortToPrint(spt);
     PrintLab(spt);
+    
+    ReleaseGraph(g);
     
     //fclose(out);
     return 0;
