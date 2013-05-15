@@ -17,11 +17,11 @@
 int main(int argc, const char * argv[])
 {
     Graph *g = NULL, *spt = NULL;
-    FILE *out = NULL;
+    //FILE *out = NULL;
     int N = 0;
     
     //out = fopen("out.txt", "w");
-    SetOutStream(stdout);
+    //SetOutStream(out);
     
     scanf("%d", &N);
     
