@@ -8,56 +8,57 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "labyrinth.h"
 
-static FILE *outStream;
+static FILE *outStream = NULL;
 
-Graph *InitLab(int _n)
+Graph *InitLab(int N)
 {
     Graph *graph = NULL;
-    int n = 0, i = 0, j = 0, addedPairs = 0;
+    int edgesNum = 0, i = 0, j = 0, addedPairs = 0;
     
-    n = 2 * _n * (_n - 1);
+    edgesNum = 2 * N * (N - 1);
     
     graph = malloc(sizeof(Graph));
     if (!graph) { return NULL; }
     
-    graph->_n = _n;
-    graph->n = n;
+    graph->N = N;
+    graph->edgesNum = edgesNum;
     
-    graph->edges = malloc(n * sizeof(Pair *));
+    graph->edges = malloc(edgesNum * sizeof(Edge));
     if (!graph->edges) { free(graph); return NULL; }
     
     
-    for (i = 0; i < n; i++)
+    for (i = 0; i < edgesNum; i++)
     {
         graph->edges[i] = malloc(sizeof(Pair));
         if (!graph->edges[i]) { goto mem; }
     }
     
-    for (i = 0; i < _n; i++)
+    for (i = 0; i < N; i++)
     {
-        for (j = 0; j < _n - 1; j++)
+        for (j = 0; j < N - 1; j++)
         {
-            graph->edges[i * (_n - 1) + j]->f = i * _n + j;
-            graph->edges[i * (_n - 1) + j]->s = i * _n + j + 1;
+            graph->edges[i * (N - 1) + j]->f = i * N + j;
+            graph->edges[i * (N - 1) + j]->s = i * N + j + 1;
         }
     }
     
-    addedPairs = _n * (_n - 1);
+    addedPairs = N * (N - 1);
     
-    for (i = 0; i < _n - 1; i++)
+    for (i = 0; i < N - 1; i++)
     {
-        for (j = 0; j < _n; j++)
+        for (j = 0; j < N; j++)
         {
-            graph->edges[addedPairs + i * _n + j]->f = i * _n + j;
-            graph->edges[addedPairs + i * _n + j]->s = (i + 1) * _n + j;
+            graph->edges[addedPairs + i * N + j]->f = i * N + j;
+            graph->edges[addedPairs + i * N + j]->s = (i + 1) * N + j;
         }
     }
     
     return graph;
     
-    mem:
+mem:
     for (j = 0; j < i + 1; j++)
     {
         free(graph->edges[j]);
@@ -74,7 +75,8 @@ void SetOutStream(FILE *stream)
 
 void PrintLab(Graph *graph)
 {
-    int n = 0, _n = 0, i = 0, j = 0, vertical = 0;
+    int edgesNum = 0, N = 0, i = 0, j = 0,
+        vertical = 0; // first index of horizontal edges
     
     if (!graph)
     {
@@ -82,15 +84,20 @@ void PrintLab(Graph *graph)
         return;
     }
     
-    n = graph->n;
-    _n = graph->_n;
+    edgesNum = graph->edgesNum;
+    N = graph->N;
     
-    vertical =  _n * (_n - 1);
+    vertical =  N * (N - 1);
+    
+    if (!outStream)
+    {
+        outStream = stdout;
+    }
     
     fprintf(outStream, "\n");
-    for (i = 0; i < _n; i++)
+    for (i = 0; i < N; i++)
     {
-        fprintf(outStream, " _");
+        fprintf(outStream, " _"); // upper bound of square
     }
     fprintf(outStream, " ");
     fprintf(outStream, "\n");
@@ -98,61 +105,71 @@ void PrintLab(Graph *graph)
     i = j = 0;
     while (j < vertical)
     {
-        if (i % _n == 0)
+        if (i % N == 0)
         {
-            fprintf(outStream, "|");
+            fprintf(outStream, "|"); // first vertical edge in each row (part of left bound)
         }
-        if (i < _n * _n - _n)
+        if (i < N * N - N)
         {
             fprintf(outStream, graph->edges[vertical + i] ? " " : "_");
         }
         else
-            fprintf(outStream, "_");
+        {
+            fprintf(outStream, "_"); // printing bottom bound
+        }
         
-        if (i % _n != _n - 1)
+        if (i % N != N - 1)
         {
             fprintf(outStream, graph->edges[j] ? " " : "|");
         }
-        if (i % _n == _n - 1)
+        if (i % N == N - 1)
         {
-            fprintf(outStream, "|\n");
+            fprintf(outStream, "|\n"); // last in a row (part of right bound)
             j--;
         }
         i++;
         j++;
     }
-    fprintf(outStream, "_|\n\n");
+    fprintf(outStream, "_|\n\n"); // right bottom corner
 }
 
-void GetU(Graph *graph, int v, int *u, int from)
+static void GetU(Graph *graph, int v, int *u, int from) // writes neighbourhood of <v>  within <graph> to <u> array, excluding <from> vertice
 {
-    int i = 0, _n = 0, curr = 0, vertical = 0;
+    int i = 0, edgesNum = 0, current = 0;
+    Edge U[4] = {0};
     
-    _n = graph->_n;
-    vertical =  _n * (_n - 1);
-    for (i = 0; i < 4; u[i] = -1, i++);
+    edgesNum = graph->edgesNum;
     
-    if (v - _n >= 0)
-        if (graph->edges[vertical + v - _n])
-            if (v - _n != from)
-                u[curr] = v - _n, curr++;
-    if (v % _n != 0)
-        if (graph->edges[v - (v / _n + 1)])
-            if (v - 1 != from)
-                u[curr] = v - 1, curr++;
-    if (v % _n != _n - 1)
-        if (graph->edges[v - (v / _n + 1) + 1])
-            if (v + 1 != from)
-                u[curr] = v + 1, curr++;
-    if (v + _n < _n * _n)
-        if (graph->edges[vertical + v])
-            if (v + _n != from)
-                u[curr] = v + _n, curr++;
+    for (i = 0; i < 4; u[i] = -1, i++); // -1 stands for an empty cell
+    
+    for (i = 0; i < edgesNum; i++) // finding pairs containing v
+    {
+        if (graph->edges[i] && (graph->edges[i]->f == v || graph->edges[i]->s == v))
+        {
+            U[current] = graph->edges[i]; // writing them to temporary <U> neighbourhood
+            current += 1; // if added smth
+            if (current == 4) // we don't need to look further if we found all possible neighbours
+            {
+                break;
+            }
+        }
+    }
+    
+    current = 0; // for writing to real neighbourhood
+    
+    for (i = 0; i < 4; i++)
+    {
+        u[current] = U[i] ? (U[i]->f == v ? U[i]->s : U[i]->f) : -1; // in case added nothing (no neighbours)
+        if (u[current] != -1 && u[current] != from) // moving forward only if added valid vertice
+        {
+            current++;
+        }
+    }
 }
 
-int Len(int *u)
+static int Len(int *u) // returns length of -1 terminated array with max possible length 4
 {
-    int i = 0;;
+    int i = 0;
     
     for (i = 0; i < 4; i++)
     {
@@ -162,57 +179,117 @@ int Len(int *u)
     return 4;
 }
 
-int _dfs(Graph *graph, int *x, int v, int from)
+void ShuffleEdges(Edge *edges, int edgesNum)
+{
+    int i;
+    
+    srand((unsigned int)time(NULL));
+    
+    for (i = 0; i < edgesNum - 1; i++)
+    {
+        int j = i + rand() / (RAND_MAX / (edgesNum - i) + 1);
+        Edge tmp = edges[j];
+        edges[j] = edges[i];
+        edges[i] = tmp;
+    }
+}
+
+int SortToPrint(Graph *graph)
+{
+    int i = 0, f = 0, s = 0, a = 0, b = 0, N = 0, addedPairs = 0, edgesNum = 0;
+    Edge *sorted = NULL, *edges = NULL;
+    
+    edgesNum = graph->edgesNum;
+    edges = graph->edges;
+    N = graph->N;
+    addedPairs = N * (N - 1);
+    
+    sorted = malloc(edgesNum * sizeof(Edge));
+    if (!sorted) { return NULL; }
+    
+    for (i = 0; i < edgesNum; i++)
+    {
+        sorted[i] = NULL;
+    }
+    
+    for (i = 0; i < edgesNum; i++)
+    {
+        if (!edges[i]) // all NULLs go to the end
+        {
+            continue;
+        }
+        
+        f = edges[i]->f;
+        s = edges[i]->s;
+        
+        a = f / N; b = f % N; // smth reverse to InitLab function
+        
+        if (f + 1 == s) // it's vertical edge
+        {
+            sorted[a * (N - 1) + b] = edges[i]; // goes to beginning
+        }
+        else
+        {
+            sorted[addedPairs + a * N + b] = edges[i]; // goes after the middle
+        }
+    }
+    
+    free(edges);
+    graph->edges = sorted;
+}
+
+// recursive deep-first-search wihin <graph> in vertice <v> with previous vertice <from> and array of labels <labels>
+static int _dfs(Graph *graph, int *labels, int v, int from)
 {
     int i = 0, num = 0, u[4] = {0}, lenU = 0, to = 0;
     
-    num = graph->_n * graph->_n;
+    num = graph->N * graph->N;
     
-    //printf("%d ", v);
-    x[v] = 1;
+    labels[v] = 1; // started from here
     
-    GetU(graph, v, u, from);
+    GetU(graph, v, u, from); // after this <u> contains neighbourhood of <v>
     lenU = Len(u);
+    
     for (i = 0; i < lenU; i++)
     {
-        to = u[i];
-        if (x[to] == 0)
+        to = u[i]; // next vertice to go
+        if (labels[to] == 0) // haven't been in <to>
         {
-            if (_dfs(graph, x, to, v))
-                return 1;
+            if (_dfs(graph, labels, to, v))
+                return 1; // found a cycle
         }
-        else if (x[to] == 1)
+        else if (labels[to] == 1) // have been in <to> during this path
         {
-            return 1;
+            return 1; // found a cycle
         }
     }
     
-    x[v] = 2;
+    labels[v] = 2; // finished in here
     return 0;
 }
 
-int Dfs(Graph *graph, int v)
+static int Dfs(Graph *graph, int v) // returns 1 if there is a cycle containing <v> in <graph>
 {
-    int num = 0, *x = NULL, i = 0;
+    int num = 0, *x = NULL, i = 0, result = 0;
     
-    num = graph->_n * graph->_n;
+    num = graph->N * graph->N;
     
     x = malloc(num * sizeof(int));
-    if (!x)
-    {
-        return -1;
-    }
+    if (!x) { return -1; }
     
-    for (i = 0; i < num; x[i] = 0, i++);
+    for (i = 0; i < num; x[i] = 0, i++); // haven't been anywhere yet
     
-    return _dfs(graph, x, v, v);
+    result = _dfs(graph, x, v, v);
+    free(x);
+    
+    return result;
 }
 
 int Acyclic(Graph *graph)
 {
     int i = 0, num = 0;
     
-    num = graph->_n * graph->_n;
+    num = graph->N * graph->N;
     
     for (i = 0; i < num; i++)
         if (Dfs(graph, i))
@@ -226,20 +303,20 @@ int Acyclic(Graph *graph)
 Graph *Kruskal(Graph *g)
 {
     Graph *spt = NULL;
-    int k = 0, n = 0, i = 0;
+    int k = 0, edgesNum = 0, i = 0;
     
     spt = malloc(sizeof(Graph));
     if (!spt) { return NULL; }
     
-    spt->_n = g->_n;
-    spt->n = g->n;
+    spt->N = g->N;
+    spt->edgesNum = g->edgesNum;
     
-    spt->edges = malloc(spt->n * sizeof(Pair *));
+    spt->edges = malloc(spt->edgesNum * sizeof(Edge));
     if (!spt->edges) { free(spt); return NULL; }
     
-    n = g->n;
+    edgesNum = g->edgesNum;
     
-    for (i = 0; i < n; i++)
+    for (i = 0; i < edgesNum; i++)
     {
         while (!Acyclic((spt->edges[k] = g->edges[k], spt)))
         {
@@ -251,5 +328,30 @@ Graph *Kruskal(Graph *g)
     return spt;
 }
 
-
+void ReleaseGraph(Graph *graph)
+{
+    int edgesNum = 0, i = 0;
+    
+    if (!graph)
+    {
+        return;
+    }
+    if (!graph->edges)
+    {
+        free(graph);
+    }
+    
+    edgesNum = graph->edgesNum;
+    
+    for (i = 0; i < edgesNum; i++)
+    {
+        if (graph->edges[i])
+        {
+            free(graph->edges[i]);
+        }
+    }
+    
+    free(graph->edges);
+    free(graph);
+}
 
