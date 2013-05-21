@@ -332,14 +332,12 @@ Graph *Kruskal(Graph *g)
     
     for (i = 0; i < verticesNum - 1; i++)
     {
-        while (k < edgesNum && !Acyclic((spt->edges[k] = g->edges[k], spt->edgesNum++, spt)))
+        while (!Acyclic((spt->edges[k] = g->edges[k], spt->edgesNum++, spt)))
         {
             spt->edges[k] = NULL;
             spt->edgesNum--;
             k++;
         }
-        if (k > edgesNum - 1)
-            break;
         k++;
     }
     return spt;
