@@ -18,6 +18,11 @@ Graph *InitLab(int N)
     Graph *graph = NULL;
     int edgesNum = 0, i = 0, j = 0, addedPairs = 0;
     
+    if (N < 2) // N = 1 doesn't make sense
+    {
+        return NULL;
+    }
+    
     edgesNum = 2 * N * (N - 1);
     
     graph = malloc(sizeof(Graph));
@@ -138,7 +143,7 @@ static void GetU(Graph *graph, int v, int *u, int from) // writes neighbourhood 
     int i = 0, edgesNum = 0, current = 0;
     Edge U[4] = {0};
     
-    edgesNum = graph->edgesNum;
+    edgesNum = 2 * graph->N * (graph->N - 1); // we should run through all list, otherwise we can't check horizontal edges, for example
     
     for (i = 0; i < 4; u[i] = -1, i++); // -1 stands for an empty cell
     
@@ -199,9 +204,10 @@ int SortToPrint(Graph *graph)
     int i = 0, f = 0, s = 0, a = 0, b = 0, N = 0, addedPairs = 0, edgesNum = 0;
     Edge *sorted = NULL, *edges = NULL;
     
-    edgesNum = graph->edgesNum;
-    edges = graph->edges;
     N = graph->N;
+    
+    edgesNum = 2 * N * (N - 1); // we are soring all, even if there are two edges, they can be from anywhere
+    edges = graph->edges;
     addedPairs = N * (N - 1);
     
     sorted = malloc(edgesNum * sizeof(Edge));
@@ -243,9 +249,8 @@ int SortToPrint(Graph *graph)
 // recursive deep-first-search wihin <graph> in vertice <v> with previous vertice <from> and array of labels <labels>
 static int _dfs(Graph *graph, int *labels, int v, int from)
 {
-    int i = 0, num = 0, u[4] = {0}, lenU = 0, to = 0;
+    int i = 0, u[4] = {0}, lenU = 0, to = 0;
     
-    num = graph->N * graph->N;
     
     labels[v] = 1; // started from here
     
@@ -283,6 +288,7 @@ static int Dfs(Graph *graph, int v) // returns 1 if there is a cycle containing 
     
     result = _dfs(graph, labels, v, v);
     free(labels);
+    labels = NULL;  
     
     return result;
 }
@@ -305,26 +311,35 @@ int Acyclic(Graph *graph)
 Graph *Kruskal(Graph *g)
 {
     Graph *spt = NULL;
-    int k = 0, edgesNum = 0, i = 0;
+    int k = 0, edgesNum = 0, i = 0, verticesNum = 0;
     
     spt = malloc(sizeof(Graph));
     if (!spt) { return NULL; }
     
     spt->N = g->N;
-    spt->edgesNum = g->edgesNum;
-    
-    spt->edges = malloc(spt->edgesNum * sizeof(Edge));
-    if (!spt->edges) { free(spt); return NULL; }
-    
+    spt->edgesNum = 0; // empty
     edgesNum = g->edgesNum;
+    
+    spt->edges = malloc(edgesNum * sizeof(Edge));
+    if (!spt->edges) { free(spt); return NULL; }
     
     for (i = 0; i < edgesNum; i++)
     {
-        while (!Acyclic((spt->edges[k] = g->edges[k], spt)))
+        spt->edges[i] = NULL; // for correct behaviour
+    }
+    
+    verticesNum = g->N * g->N;
+    
+    for (i = 0; i < verticesNum - 1; i++)
+    {
+        while (k < edgesNum && !Acyclic((spt->edges[k] = g->edges[k], spt->edgesNum++, spt)))
         {
             spt->edges[k] = NULL;
+            spt->edgesNum--;
             k++;
         }
+        if (k > edgesNum - 1)
+            break;
         k++;
     }
     return spt;
