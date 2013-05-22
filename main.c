@@ -7,6 +7,8 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include "labyrinth.h"
 
 // В  квадрате  NxN  клеток  требуется  построить  случайный  лабиринт из
@@ -23,6 +25,7 @@ int main(int argc, const char * argv[])
     //out = fopen("out.txt", "w");
     //SetOutStream(out);
     
+    srand((unsigned int)time(NULL)); // seed random
     scanf("%d", &N);
     
     g = InitLab(N);
