@@ -8,8 +8,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include "labyrinth.h"
+#include "disjointset.h"
 
 static FILE *outStream = NULL;
 
@@ -188,8 +188,6 @@ void ShuffleEdges(Edge *edges, int edgesNum)
 {
     int i;
     
-    srand((unsigned int)time(NULL));
-    
     for (i = 0; i < edgesNum - 1; i++)
     {
         int j = i + rand() / (RAND_MAX / (edgesNum - i) + 1);
@@ -311,7 +309,7 @@ int Acyclic(Graph *graph)
 Graph *Kruskal(Graph *g)
 {
     Graph *spt = NULL;
-    int k = 0, edgesNum = 0, i = 0, verticesNum = 0;
+    int k = 0, edgesNum = 0, i = 0, verticesNum = 0, *djs = NULL, addedEdges = 0;
     
     spt = malloc(sizeof(Graph));
     if (!spt) { return NULL; }
@@ -330,16 +328,25 @@ Graph *Kruskal(Graph *g)
     
     verticesNum = g->N * g->N;
     
-    for (i = 0; i < verticesNum - 1; i++)
+    djs = malloc(verticesNum * sizeof(int));
+    for (i = 0; i < verticesNum; i++)
     {
-        while (!Acyclic((spt->edges[k] = g->edges[k], spt->edgesNum++, spt)))
+        MakeSet(djs, i);
+    }
+    
+    while (addedEdges < verticesNum - 1)
+    {
+        while (Find(djs, g->edges[k]->f) != Find(djs, g->edges[k]->s))
         {
-            spt->edges[k] = NULL;
-            spt->edgesNum--;
+            Unite(djs, g->edges[k]->f, g->edges[k]->s);
+            spt->edges[k] = g->edges[k];
             k++;
+            addedEdges++;
         }
         k++;
     }
+    
+    free(djs);
     return spt;
 }
 
