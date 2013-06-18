@@ -138,52 +138,6 @@ void PrintLab(Graph *graph)
     fprintf(outStream, "_|\n\n"); // right bottom corner
 }
 
-static void GetU(Graph *graph, int v, int *u, int from) // writes neighbourhood of <v>  within <graph> to <u> array, excluding <from> vertice
-{
-    int i = 0, edgesNum = 0, current = 0;
-    Edge U[4] = {0};
-    
-    edgesNum = 2 * graph->N * (graph->N - 1); // we should run through all list, otherwise we can't check horizontal edges, for example
-    
-    for (i = 0; i < 4; u[i] = -1, i++); // -1 stands for an empty cell
-    
-    for (i = 0; i < edgesNum; i++) // finding pairs containing v
-    {
-        if (graph->edges[i] && (graph->edges[i]->f == v || graph->edges[i]->s == v))
-        {
-            U[current] = graph->edges[i]; // writing them to temporary <U> neighbourhood
-            current += 1; // if added smth
-            if (current == 4) // we don't need to look further if we found all possible neighbours
-            {
-                break;
-            }
-        }
-    }
-    
-    current = 0; // for writing to real neighbourhood
-    
-    for (i = 0; i < 4; i++)
-    {
-        u[current] = U[i] ? (U[i]->f == v ? U[i]->s : U[i]->f) : -1; // in case added nothing (no neighbours)
-        if (u[current] != -1 && u[current] != from) // moving forward only if added valid vertice
-        {
-            current++;
-        }
-    }
-}
-
-static int Len(int *u) // returns length of -1 terminated array with max possible length 4
-{
-    int i = 0;
-    
-    for (i = 0; i < 4; i++)
-    {
-        if (u[i] == -1)
-            return i;
-    }
-    return 4;
-}
-
 void ShuffleEdges(Edge *edges, int edgesNum)
 {
     int i;
@@ -240,68 +194,6 @@ int SortToPrint(Graph *graph)
     
     free(edges);
     graph->edges = sorted;
-    
-    return 1;
-}
-
-// recursive deep-first-search wihin <graph> in vertice <v> with previous vertice <from> and array of labels <labels>
-static int _dfs(Graph *graph, int *labels, int v, int from)
-{
-    int i = 0, u[4] = {0}, lenU = 0, to = 0;
-    
-    
-    labels[v] = 1; // started from here
-    
-    GetU(graph, v, u, from); // after this <u> contains neighbourhood of <v>
-    lenU = Len(u);
-    
-    for (i = 0; i < lenU; i++)
-    {
-        to = u[i]; // next vertice to go
-        if (labels[to] == 0) // haven't been in <to>
-        {
-            if (_dfs(graph, labels, to, v))
-                return 1; // found a cycle
-        }
-        else if (labels[to] == 1) // have been in <to> during this path
-        {
-            return 1; // found a cycle
-        }
-    }
-    
-    labels[v] = 2; // finished in here
-    return 0;
-}
-
-static int Dfs(Graph *graph, int v) // returns 1 if there is a cycle containing <v> in <graph>
-{
-    int verticeNum = 0, *labels = NULL, i = 0, result = 0;
-    
-    verticeNum = graph->N * graph->N;
-    
-    labels = malloc(verticeNum * sizeof(int));
-    if (!labels) { return -1; }
-    
-    for (i = 0; i < verticeNum; labels[i] = 0, i++); // haven't been anywhere yet
-    
-    result = _dfs(graph, labels, v, v);
-    free(labels);
-    labels = NULL;  
-    
-    return result;
-}
-
-int Acyclic(Graph *graph)
-{
-    int i = 0, num = 0;
-    
-    num = graph->N * graph->N;
-    
-    for (i = 0; i < num; i++)
-        if (Dfs(graph, i))
-        {
-            return 0;
-        }
     
     return 1;
 }
