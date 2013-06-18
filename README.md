@@ -1,4 +1,4 @@
-#LabGen
+#Slabgen
 
 This a square labyrinths generator written in pure C for practice.
 
