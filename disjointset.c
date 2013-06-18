@@ -26,7 +26,9 @@ void Unite(int *p, int x, int y)
     
     if (rand() % 2)
     {
-        y = (x + y) - (x = y);
+    	int temp = x;
+    	x = y;
+    	y = temp;
     }
     p[x] = y;
 }
